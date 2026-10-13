@@ -1,0 +1,143 @@
+/*
+ * Oled_asci.c
+ *
+ *  Created on: 13-Oct-2026
+ *      Author: acer
+ */
+#include "Oled_asci.h"
+
+/* Basic 5x7 ASCII Font Table (32 ' ' to 90 'Z') */
+static const uint8_t Font5x7[][5] = {
+    /* Index  0 | ASCII 32 */ {0x00, 0x00, 0x00, 0x00, 0x00}, // ' ' (Space)
+    /* Index  1 | ASCII 33 */ {0x00, 0x00, 0x5f, 0x00, 0x00}, // '!'
+    /* Index  2 | ASCII 34 */ {0x00, 0x07, 0x00, 0x07, 0x00}, // '"'
+    /* Index  3 | ASCII 35 */ {0x14, 0x7f, 0x14, 0x7f, 0x14}, // '#'
+    /* Index  4 | ASCII 36 */ {0x24, 0x2a, 0x7f, 0x2a, 0x12}, // '$'
+    /* Index  5 | ASCII 37 */ {0x23, 0x13, 0x08, 0x64, 0x62}, // '%'
+    /* Index  6 | ASCII 38 */ {0x36, 0x49, 0x55, 0x22, 0x50}, // '&'
+    /* Index  7 | ASCII 39 */ {0x00, 0x05, 0x03, 0x00, 0x00}, // '\''
+    /* Index  8 | ASCII 40 */ {0x00, 0x1c, 0x22, 0x41, 0x00}, // '('
+    /* Index  9 | ASCII 41 */ {0x00, 0x41, 0x22, 0x1c, 0x00}, // ')'
+    /* Index 10 | ASCII 42 */ {0x14, 0x08, 0x3e, 0x08, 0x14}, // '*'
+    /* Index 11 | ASCII 43 */ {0x08, 0x08, 0x3e, 0x08, 0x08}, // '+'
+    /* Index 12 | ASCII 44 */ {0x00, 0x50, 0x30, 0x00, 0x00}, // ','
+    /* Index 13 | ASCII 45 */ {0x08, 0x08, 0x08, 0x08, 0x08}, // '-'
+    /* Index 14 | ASCII 46 */ {0x00, 0x60, 0x60, 0x00, 0x00}, // '.'
+    /* Index 15 | ASCII 47 */ {0x20, 0x10, 0x08, 0x04, 0x02}, // '/'
+
+    /* Digits (0 - 9) */
+    /* Index 16 | ASCII 48 */ {0x3e, 0x51, 0x49, 0x45, 0x3e}, // '0'
+    /* Index 17 | ASCII 49 */ {0x00, 0x42, 0x7f, 0x40, 0x00}, // '1'
+    /* Index 18 | ASCII 50 */ {0x42, 0x61, 0x51, 0x49, 0x46}, // '2'
+    /* Index 19 | ASCII 51 */ {0x21, 0x41, 0x45, 0x4b, 0x31}, // '3'
+    /* Index 20 | ASCII 52 */ {0x18, 0x14, 0x12, 0x7f, 0x10}, // '4'
+    /* Index 21 | ASCII 53 */ {0x27, 0x45, 0x45, 0x45, 0x39}, // '5'
+    /* Index 22 | ASCII 54 */ {0x3c, 0x4a, 0x49, 0x49, 0x30}, // '6'
+    /* Index 23 | ASCII 55 */ {0x01, 0x71, 0x09, 0x05, 0x03}, // '7'
+    /* Index 24 | ASCII 56 */ {0x36, 0x49, 0x49, 0x49, 0x36}, // '8'
+    /* Index 25 | ASCII 57 */ {0x06, 0x49, 0x49, 0x29, 0x1e}, // '9'
+
+    /* Punctuation / Symbols */
+    /* Index 26 | ASCII 58 */ {0x00, 0x36, 0x36, 0x00, 0x00}, // ':'
+    /* Index 27 | ASCII 59 */ {0x00, 0x56, 0x36, 0x00, 0x00}, // ';'
+    /* Index 28 | ASCII 60 */ {0x08, 0x14, 0x22, 0x41, 0x00}, // '<'
+    /* Index 29 | ASCII 61 */ {0x24, 0x24, 0x24, 0x24, 0x24}, // '='
+    /* Index 30 | ASCII 62 */ {0x00, 0x41, 0x22, 0x14, 0x08}, // '>'
+    /* Index 31 | ASCII 63 */ {0x02, 0x01, 0x51, 0x09, 0x06}, // '?'
+    /* Index 32 | ASCII 64 */ {0x32, 0x49, 0x79, 0x41, 0x3e}, // '@'
+
+    /* Uppercase Letters (A - Z) */
+    /* Index 33 | ASCII 65 */ {0x7e, 0x11, 0x11, 0x11, 0x7e}, // 'A'
+    /* Index 34 | ASCII 66 */ {0x7f, 0x49, 0x49, 0x49, 0x36}, // 'B'
+    /* Index 35 | ASCII 67 */ {0x3e, 0x41, 0x41, 0x41, 0x22}, // 'C'
+    /* Index 36 | ASCII 68 */ {0x7f, 0x41, 0x41, 0x22, 0x1c}, // 'D'
+    /* Index 37 | ASCII 69 */ {0x7f, 0x49, 0x49, 0x49, 0x41}, // 'E'
+    /* Index 38 | ASCII 70 */ {0x7f, 0x09, 0x09, 0x09, 0x01}, // 'F'
+    /* Index 39 | ASCII 71 */ {0x3e, 0x41, 0x49, 0x49, 0x7a}, // 'G'
+    /* Index 40 | ASCII 72 */ {0x7f, 0x08, 0x08, 0x08, 0x7f}, // 'H'
+    /* Index 41 | ASCII 73 */ {0x00, 0x41, 0x7f, 0x41, 0x00}, // 'I'
+    /* Index 42 | ASCII 74 */ {0x20, 0x40, 0x41, 0x3f, 0x01}, // 'J'
+    /* Index 43 | ASCII 75 */ {0x7f, 0x08, 0x14, 0x22, 0x41}, // 'K'
+    /* Index 44 | ASCII 76 */ {0x7f, 0x40, 0x40, 0x40, 0x40}, // 'L'
+    /* Index 45 | ASCII 77 */ {0x7f, 0x02, 0x0c, 0x02, 0x7f}, // 'M'
+    /* Index 46 | ASCII 78 */ {0x7f, 0x04, 0x08, 0x10, 0x7f}, // 'N'
+    /* Index 47 | ASCII 79 */ {0x3e, 0x41, 0x41, 0x41, 0x3e}, // 'O'
+    /* Index 48 | ASCII 80 */ {0x7f, 0x09, 0x09, 0x09, 0x06}, // 'P'
+    /* Index 49 | ASCII 81 */ {0x3e, 0x41, 0x51, 0x21, 0x5e}, // 'Q'
+    /* Index 50 | ASCII 82 */ {0x7f, 0x09, 0x19, 0x29, 0x46}, // 'R'
+    /* Index 51 | ASCII 83 */ {0x46, 0x49, 0x49, 0x49, 0x31}, // 'S'
+    /* Index 52 | ASCII 84 */ {0x01, 0x01, 0x7f, 0x01, 0x01}, // 'T'
+    /* Index 53 | ASCII 85 */ {0x3f, 0x40, 0x40, 0x40, 0x3f}, // 'U'
+    /* Index 54 | ASCII 86 */ {0x1f, 0x20, 0x40, 0x20, 0x1f}, // 'V'
+    /* Index 55 | ASCII 87 */ {0x3f, 0x40, 0x38, 0x40, 0x3f}, // 'W'
+    /* Index 56 | ASCII 88 */ {0x63, 0x14, 0x08, 0x14, 0x63}, // 'X'
+    /* Index 57 | ASCII 89 */ {0x07, 0x08, 0x70, 0x08, 0x07}, // 'Y'
+    /* Index 58 | ASCII 90 */ {0x61, 0x51, 0x49, 0x45, 0x43}  // 'Z'
+};
+/*
+
+/* ==================== OLED FUNCTIONS ==================== */
+
+
+void OLED_Write(uint8_t mode, uint8_t byte) {
+    uint8_t buf[2] = {mode, byte};
+    LPI2C_DRV_MasterSetSlaveAddr(0, OLED_ADDR, false);
+    LPI2C_DRV_MasterSendDataBlocking(0, buf, 2, true, 100);
+}
+
+
+void OLED_Init(void) {
+    uint8_t initCmds[] = {
+    				0xAE,       // 1. Display OFF (Sleep mode)
+    		        0xD5, 0x80, // 2. Set Clock Divider / Oscillator Frequency
+    		        0xA8, 0x3F, // 3. Set Multiplex Ratio to 64 (128x64 display)
+    		        0xD3, 0x00, // 4. Set Display Offset to 0 (No vertical shift)
+    		        0x40,       // 5. Set Display Start Line to 0
+    		        0x8D, 0x14, // 6. ENABLE CHARGE PUMP (Crucial: converts 3.3V to 7.5V for screen glass)
+    		        0x20, 0x02, // 7. Set Memory Addressing Mode to Page Addressing Mode
+    		        0xA1,       // 8. Flip Horizontally (Segment Re-map)
+    		        0xC8,       // 9. Flip Vertically (COM Scan Direction)
+    		        0xDA, 0x12, // 10. Set COM Pins Hardware Configuration
+    		        0x81, 0x7F, // 11. Set Contrast Level (0x7F = 50% brightness)
+    		        0xA4,       // 12. Set Display to follow RAM contents
+    		        0xA6,       // 13. Set Normal Display Mode (1 = Pixel ON, 0 = Pixel OFF)
+    		        0xAF        // 14. Display ON (Wake up display)
+    };
+    for (uint8_t i = 0; i < sizeof(initCmds); i++) {
+        OLED_Write(0x00, initCmds[i]);
+    }
+}
+
+void OLED_Clear(void) {
+    for (uint8_t page = 0; page < 8; page++) {
+        OLED_Write(0x00, 0xB0 + page);
+        OLED_Write(0x00, 0x00);
+        OLED_Write(0x00, 0x10);
+        for (uint8_t col = 0; col < 128; col++) {
+            OLED_Write(0x40, 0x00);
+        }
+    }
+}
+
+void OLED_PutString(const char* str, uint8_t page, uint8_t col) {
+    while (*str) {
+        char c = *str;
+        if (c >= 'a' && c <= 'z') c -= 32;
+        if (c < 32 || c > 90) c = 32;
+        uint8_t fontIdx = c - 32 ;
+
+       OLED_Write(0x00, 0xB0 + page);
+       OLED_Write(0x00, col & 0x0F);
+       OLED_Write(0x00, 0x10 | (col>>4));
+
+        for (uint8_t i = 0; i < 5; i++) {
+            OLED_Write(0x40, Font5x7[fontIdx][i]);
+        }
+        OLED_Write(0x40, 0x00); // Space gap between letters
+        col += 6;
+        str++;
+    }
+}
+
+
+
