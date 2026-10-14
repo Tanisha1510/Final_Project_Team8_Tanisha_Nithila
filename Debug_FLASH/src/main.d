@@ -18,8 +18,7 @@ src/main.o: ../src/main.c \
  C:/Users/acer/workspaceS32DS.3.5/Final_Project_Trail2/board/peripherals_osif_1.h \
  C:/Users/acer/workspaceS32DS.3.5/Final_Project_Trail2/board/peripherals_edma_config_1.h \
  ../SDK/platform/drivers/inc/edma_driver.h ../src/Nvm_Header.h \
- ../src/EEPROM_Header.h ../src/Oled_asci.h ../src/OLED_Display.h \
- ../src/Nvm_Test.h
+ ../src/EEPROM_Header.h ../src/Oled_asci.h
 
 C:/Users/acer/workspaceS32DS.3.5/Final_Project_Trail2/board/sdk_project_config.h:
 
@@ -66,7 +65,3 @@ C:/Users/acer/workspaceS32DS.3.5/Final_Project_Trail2/board/peripherals_edma_con
 ../src/EEPROM_Header.h:
 
 ../src/Oled_asci.h:
-
-../src/OLED_Display.h:
-
-../src/Nvm_Test.h:
