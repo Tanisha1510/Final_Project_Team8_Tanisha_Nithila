@@ -5,8 +5,6 @@
  *      Author: acer
  */
 #include "Oled_asci.h"
-
-/* Basic 5x7 ASCII Font Table (32 ' ' to 90 'Z') */
 static const uint8_t Font5x7[][5] = {
     /* Index  0 | ASCII 32 */ {0x00, 0x00, 0x00, 0x00, 0x00}, // ' ' (Space)
     /* Index  1 | ASCII 33 */ {0x00, 0x00, 0x5f, 0x00, 0x00}, // '!'
@@ -74,18 +72,11 @@ static const uint8_t Font5x7[][5] = {
     /* Index 57 | ASCII 89 */ {0x07, 0x08, 0x70, 0x08, 0x07}, // 'Y'
     /* Index 58 | ASCII 90 */ {0x61, 0x51, 0x49, 0x45, 0x43}  // 'Z'
 };
-/*
-
-/* ==================== OLED FUNCTIONS ==================== */
-
-
 void OLED_Write(uint8_t mode, uint8_t byte) {
     uint8_t buf[2] = {mode, byte};
     LPI2C_DRV_MasterSetSlaveAddr(0, OLED_ADDR, false);
     LPI2C_DRV_MasterSendDataBlocking(0, buf, 2, true, 100);
 }
-
-
 void OLED_Init(void) {
     uint8_t initCmds[] = {
     				0xAE,       // 1. Display OFF (Sleep mode)
