@@ -32,5 +32,7 @@
 "./board/pin_mux.o"
 "./src/EEPROM.o"
 "./src/Nvm.o"
+"./src/Nvm_Test.o"
+"./src/OLED_Display.o"
 "./src/Oled_asci.o"
 "./src/main.o"
